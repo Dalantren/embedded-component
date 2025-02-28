@@ -1,4 +1,4 @@
-import { Component, EnvironmentInjector, inject, Injector, Renderer2, runInInjectionContext, signal, viewChild, ViewContainerRef } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, EnvironmentInjector, inject, Injector, Renderer2, signal, viewChild, ViewContainerRef } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { createCustomElement } from '@angular/elements';
 import { TestComponent } from './test.component';
@@ -6,9 +6,9 @@ import { TestComponent } from './test.component';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, TestComponent],
+  imports: [TestComponent],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
 })
 export class AppComponent {
   private container = viewChild('customSelectorContainer', { read: ViewContainerRef });
@@ -21,7 +21,7 @@ export class AppComponent {
   ngOnInit() {
     this.loadScript().then(() => {
       const childElement: HTMLElement = this.renderer.createElement('child-app');
-      this.envInjector, () => this.container()?.element.nativeElement.appendChild(childElement);
+      this.container()?.element.nativeElement.appendChild(childElement);
     });
   }
 
