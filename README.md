@@ -4,5 +4,6 @@
 
 1. Go to `/child` app
 2. `npm run build:watch:move`
+3. Run Live Server on `localhost:5500` 
 3. Go to `/parent` app
 4. `npm run start`
