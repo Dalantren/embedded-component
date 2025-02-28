@@ -5,7 +5,7 @@ import { TEST_INJECTION_TOKEN } from './app.config';
 @Component({
   standalone: true,
   selector: 'test-component',
-  template: `Another child component`
+  template: `Parent component`
 })
 export class TestComponent {
   token = inject(TEST_INJECTION_TOKEN)
