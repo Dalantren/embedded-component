@@ -1,7 +1,8 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, EnvironmentInjector, inject, Injector, Renderer2, signal, viewChild, ViewContainerRef } from '@angular/core';
+import { ApplicationConfig, ApplicationRef, Component, createComponent, CUSTOM_ELEMENTS_SCHEMA, EnvironmentInjector, inject, Injector, NgZone, PlatformRef, Renderer2, signal, Type, viewChild, ViewContainerRef } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { createCustomElement } from '@angular/elements';
 import { TestComponent } from './test.component';
+import { createApplication } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-root',
@@ -17,11 +18,23 @@ export class AppComponent {
   private injector = inject(Injector);
   private envInjector = inject(EnvironmentInjector);
   private renderer = inject(Renderer2);
+  private zone = inject(NgZone);
+  private abc = inject(PlatformRef);
+  private appRef = inject(ApplicationRef);
+  private component!: Type<any>;
+  private config!: ApplicationConfig;
 
   ngOnInit() {
     this.loadScript().then(() => {
       const childElement: HTMLElement = this.renderer.createElement('child-app');
-      this.container()?.element.nativeElement.appendChild(childElement);
+      // this.container()?.element.nativeElement.appendChild(childElement);
+
+      const comp = createComponent(this.component, {
+        environmentInjector: this.appRef.injector,
+        hostElement: this.container()?.element.nativeElement,
+        elementInjector: this.injector,
+      });
+      console.log(comp);
     });
   }
 
@@ -32,10 +45,18 @@ export class AppComponent {
       scriptElement.src = src;
       scriptElement.id = `test-script`;
       scriptElement.type = 'module';
+
+      this.abc.injector
       scriptElement.onload = () => {
         import(/* @vite-ignore */ src)
           .then(({ emConfig, emComponent }) => {
-            const customElement = createCustomElement(emComponent, { injector: this.envInjector });
+            this.component = emComponent;
+            this.config = emConfig;
+            return this.zone.runOutsideAngular(() => createApplication(emConfig));
+          })
+          // .then(({ emConfig, emComponent }) => {
+          .then(appRef => {
+            const customElement = createCustomElement(this.component, { injector: appRef.injector });
             customElements.define('child-app', customElement);
             resolve();
           })
